@@ -1,0 +1,52 @@
+# Request ride
+service: wild-rydes-ride-requests
+
+
+plugins:
+  - serverless-python-requirements
+
+custom:
+  stage: "${opt:stage, env:SLS_STAGE, 'dev'}"
+  profile: "${opt:aws-profile, env:AWS_PROFILE, env:AWS_DEFAULT_PROFILE, 'default'}"
+  log_level: "${env:LOG_LEVEL, 'INFO'}"
+
+
+provider:
+  name: aws
+  profile: ${self:custom.profile}
+  stage: ${self:custom.stage}
+  runtime: python3.6
+  environment:
+    LOG_LEVEL: ${self:custom.log_level}
+  stackTags:
+    serverless:service: ${self:service}
+
+
+functions:
+  RequestRide:
+    handler: handlers/request_ride.handler
+    description: "Request a ride."
+    memorySize: 128
+    timeout: 30
+    events:
+      - http:
+          path: /ride
+          method: post
+          cors: true
+
+resources:
+  Outputs:
+    RequestRideUrl:
+      Description: "URL to request a ride"
+      Value:
+        Fn::Join:
+          - ""
+          - - "https://"
+            - Ref: ApiGatewayRestApi
+            - ".execute-api."
+            - Ref: AWS::Region
+            - ".amazonaws.com/${self:custom.stage}"
+            - "/ride"
+      Export:
+        Name: "${self:service}-${self:provider.stage}-RequestRideUrl"
+
