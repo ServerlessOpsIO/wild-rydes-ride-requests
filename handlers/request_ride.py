@@ -12,12 +12,20 @@ from iopipe.iopipe import IOpipe
 from iopipe.contrib.profiler import ProfilerPlugin
 from iopipe.contrib.trace import TracePlugin
 
-iopipe = IOpipe(os.environ.get('IOPIPE_TOKEN'),
-                plugins=[ProfilerPlugin(), TracePlugin()])
-
+# logging
 log_level = os.environ.get('LOG_LEVEL', 'INFO')
 logging.root.setLevel(logging.getLevelName(log_level))  # type:ignore
 _logger = logging.getLogger(__name__)
+
+# IOpipe
+iopipe_profiler_enabled = os.environ.get('IOPIPE_PROFILER_ENABLED', '').lower() == 'true'
+iopipe_profiler_plugin = ProfilerPlugin(enabled=iopipe_profiler_enabled)
+
+iopipe_tracing_enabled = os.environ.get('IOPIPE_TRACING_ENABLED', '').lower() == 'true'
+iopipe_tracing_plugin = TracePlugin(auto_measure=iopipe_tracing_enabled)
+
+iopipe = IOpipe(os.environ.get('IOPIPE_TOKEN'),
+                plugins=[iopipe_profiler_plugin, iopipe_tracing_plugin])
 
 # DynamoDB
 DYNAMODB_TABLE = os.environ.get('DYNAMODB_TABLE')
@@ -103,6 +111,12 @@ def _record_ride(ride_item):
 def handler(event, context):
     '''Function entry'''
     _logger.debug('Request: {}'.format(json.dumps(event)))
+
+    # IOpipe state.
+    if iopipe_tracing_enabled:
+        _logger.info('iopipe_tracing_enabled: {}'.format(str(iopipe_tracing_enabled)))
+    if iopipe_profiler_enabled:
+        _logger.info('iopipe_profiler_enabled: {}'.format(str(iopipe_profiler_enabled)))
 
     authorizer = _get_authorizer_from_event(event)
     if authorizer is None:
