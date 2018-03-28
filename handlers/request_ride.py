@@ -22,7 +22,8 @@ iopipe_profiler_enabled = os.environ.get('IOPIPE_PROFILER_ENABLED', '').lower() 
 iopipe_profiler_plugin = ProfilerPlugin(enabled=iopipe_profiler_enabled)
 iopipe_tracing_plugin = TracePlugin(auto_measure=True)
 
-iopipe = IOpipe(os.environ.get('IOPIPE_TOKEN'),
+iopipe_token = os.environ.get('IOPIPE_TOKEN') or None
+iopipe = IOpipe(iopipe_token,
                 plugins=[iopipe_profiler_plugin, iopipe_tracing_plugin])
 
 # DynamoDB
