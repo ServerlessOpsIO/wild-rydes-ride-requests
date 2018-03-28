@@ -18,7 +18,7 @@ custom:
   auth_stack_name: "wild-rydes-auth-${self:custom.stage}"
   user_pool_arn: "${cf:${self:custom.auth_stack_name}.UserPoolArn}"
 
-  iopipe_token: "${env:IOPIPE_TOKEN}"
+  iopipe_token: "${env:IOPIPE_TOKEN, ''}"
   iopipe_profiler_enabled: "${env:IOPIPE_PROFILER_ENABLED, 'false'}"
 
   pythonRequirements:
