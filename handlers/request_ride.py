@@ -8,6 +8,12 @@ import random
 import string
 
 import boto3
+from iopipe.iopipe import IOpipe
+from iopipe.contrib.profiler import ProfilerPlugin
+from iopipe.contrib.trace import TracePlugin
+
+iopipe = IOpipe(os.environ.get('IOPIPE_TOKEN'),
+                plugins=[ProfilerPlugin(), TracePlugin()])
 
 log_level = os.environ.get('LOG_LEVEL', 'INFO')
 logging.root.setLevel(logging.getLevelName(log_level))  # type:ignore
@@ -93,6 +99,7 @@ def _record_ride(ride_item):
     _logger.debug('_record_ride({}) -> {}'.format(ride_item, resp))
 
 
+@iopipe
 def handler(event, context):
     '''Function entry'''
     _logger.debug('Request: {}'.format(json.dumps(event)))
