@@ -13,6 +13,14 @@ from iopipe import IOpipe
 from iopipe.contrib.profiler import ProfilerPlugin
 from iopipe.contrib.trace import TracePlugin
 
+if os.environ.get('XRAY_ENABLED', '').lower() == 'true':
+    from aws_xray_sdk.core import xray_recorder
+    from aws_xray_sdk.core import patch_all
+
+# AWS X-Ray
+if os.environ.get('XRAY_ENABLED', '').lower() == 'true':
+    patch_all()
+
 # logging
 log_level = os.environ.get('LOG_LEVEL', 'INFO')
 logging.root.setLevel(logging.getLevelName(log_level))  # type:ignore
