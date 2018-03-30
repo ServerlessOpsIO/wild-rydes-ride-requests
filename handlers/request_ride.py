@@ -122,6 +122,9 @@ def _record_ride(ride_item):
 @iopipe
 def handler(event, context):
     '''Function entry'''
+
+    context.iopipe.mark.start('request_ride')
+
     _logger.debug('Request: {}'.format(json.dumps(event)))
 
     # IOpipe state.
@@ -140,16 +143,26 @@ def handler(event, context):
         }
 
     else:
-        user = _get_user_from_authorizer(authorizer)
+        with context.iopipe.mark('get_user_from_authorizer'):
+            user = _get_user_from_authorizer(authorizer)
+
         body = json.loads(event.get('body'))
-        pickup_location = _get_pickup_location(body)
-        ride_resp = _get_ride(user, pickup_location)
+
+        with context.iopipe.mark('get_pickup_location'):
+            pickup_location = _get_pickup_location(body)
+
+        with context.iopipe.mark('get_ride'):
+            ride_resp = _get_ride(user, pickup_location)
+
+        with context.iopipe.mark('get_ride_discount'):
+            discount_multiplier = _get_ride_discount(user, pickup_location)
+
+        with context.iopipe.mark('record_ride'):
+            _record_ride(ride_resp)
 
         # Note: testing discount feature:
         discount_multiplier = _get_ride_discount(user, pickup_location)
         ride_resp['DiscountMultiplier'] = discount_multiplier
-
-        _record_ride(ride_resp)
 
         resp = {
             'statusCode': 201,
@@ -158,5 +171,6 @@ def handler(event, context):
                 "Access-Control-Allow-Origin": "*",
             }
         }
+    context.iopipe.mark.end('request_ride')
 
     return resp
