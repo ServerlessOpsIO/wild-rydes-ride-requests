@@ -1,0 +1,12 @@
+config:
+  phases:
+    - duration: 60
+      arrivalRate: 1
+scenarios:
+  - flow:
+    - post:
+        url: '/ride'
+        json:
+          PickupLocation:
+            Latitude: 42.35250862285574
+            Longitude: -71.05289904884849
