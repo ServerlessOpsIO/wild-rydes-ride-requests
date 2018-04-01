@@ -1,0 +1,22 @@
+config:
+  payload:
+    - path: "./user.csv"
+      fields:
+        - "wild_rydes_site"
+        - "wild_rydes_auth"
+  target: "{{ wild_rydes_site }}"
+  phases:
+    - duration: 60
+      arrivalRate: 1
+  defaults:
+    headers:
+      Authorization: "{{ wild_rydes_auth }}"
+scenarios:
+  - flow:
+    - post:
+        url: '/ride'
+        json:
+          PickupLocation:
+            Latitude: 42.35250862285574
+            Longitude: -71.05289904884849
+
