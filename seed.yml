@@ -1,0 +1,2 @@
+before_compile:
+  - pip install -r requirements-dev.txt
