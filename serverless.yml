@@ -17,7 +17,7 @@ custom:
   # NOTE: Because Fn::ImportValue does not work in function events(?) we use
   # the builtin cf: lookup.  We should switch to this everywhere.
   auth_stack_name: "wild-rydes-auth-${self:custom.stage}"
-  user_pool_arn: "${cf:${self:custom.auth_stack_name}.UserPoolArn}"
+  #user_pool_arn: "${cf:${self:custom.auth_stack_name}.UserPoolArn}"
 
   xray_enabled: "${env:XRAY_ENABLED, 'false'}"
 
@@ -70,8 +70,8 @@ functions:
       - http:
           path: /ride
           method: post
-          authorizer:
-            arn: "${self:custom.user_pool_arn}"
+          #authorizer:
+          #  arn: "${self:custom.user_pool_arn}"
           cors: true
 #      - http:
 #          path: /ride
@@ -91,30 +91,30 @@ functions:
           - "xray:PutTelemetryRecords"
         Resource:
           - "*"
-      - Effect: "Allow"
-        Action:
-          - "s3:PutObject"
-          - "s3:PutObjectAcl"
-          - "s3:PutObjectVersionAcl"
-          - "s3:DeleteObject"
-        Resource:
-          - Fn::Join:
-            - ''
-            - - 'arn:aws:s3:::'
-              - Fn::ImportValue: "${self:custom.website_s3_bucket_export}"
-              - '/*'
+      #- Effect: "Allow"
+      #  Action:
+      #    - "s3:PutObject"
+      #    - "s3:PutObjectAcl"
+      #    - "s3:PutObjectVersionAcl"
+      #    - "s3:DeleteObject"
+      #  Resource:
+      #    - Fn::Join:
+      #      - ''
+      #      - - 'arn:aws:s3:::'
+      #        - Fn::ImportValue: "${self:custom.website_s3_bucket_export}"
+      #       - '/*'
 
 
 resources:
-  Parameters:
+  #Parameters:
     # NOTE: While we don't use this directly due to a limitation in SLS
     # handling CFN functions in function events, it's good for us to define
     # the data we need from other stacks.  It effectively defines the input
     # interface to the service.
-    UserPoolArn:
-      Type: String
-      Description: "ARN of Wild Rydes Cognito auth pool"
-      Default: "${self:custom.user_pool_arn}"
+  #  UserPoolArn:
+  #    Type: String
+  #    Description: "ARN of Wild Rydes Cognito auth pool"
+  #    Default: "${self:custom.user_pool_arn}"
 
 
   Resources:
@@ -131,23 +131,23 @@ resources:
           ReadCapacityUnits: 5
           WriteCapacityUnits: 5
 
-    UpdateConfig:
-      Type: "Custom::ConfigFile"
-      Properties:
-        ServiceToken:
-          Fn::GetAtt:
-            - UpdateConfigLambdaFunction
-            - Arn
-        Bucket:
-          Fn::ImportValue: "${self:custom.website_s3_bucket_export}"
-        InvokeUrl:
-          Fn::Join:
-            - ""
-            - - "https://"
-              - Ref: ApiGatewayRestApi
-              - ".execute-api."
-              - Ref: AWS::Region
-              - ".amazonaws.com/${self:custom.stage}"
+    #UpdateConfig:
+    #  Type: "Custom::ConfigFile"
+    #  Properties:
+    #    ServiceToken:
+    #      Fn::GetAtt:
+    #        - UpdateConfigLambdaFunction
+    #        - Arn
+    #    Bucket:
+    #      Fn::ImportValue: "${self:custom.website_s3_bucket_export}"
+    #    InvokeUrl:
+    #      Fn::Join:
+    #        - ""
+    #        - - "https://"
+    #          - Ref: ApiGatewayRestApi
+    #          - ".execute-api."
+    #          - Ref: AWS::Region
+    #          - ".amazonaws.com/${self:custom.stage}"
 
 
   Outputs:
