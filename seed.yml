@@ -1,2 +1,4 @@
 before_compile:
   - pip install -r requirements-dev.txt
+before_build:
+  - pytest -v tests/unit
