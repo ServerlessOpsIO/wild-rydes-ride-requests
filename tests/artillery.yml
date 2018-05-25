@@ -10,6 +10,7 @@ config:
       arrivalRate: 1
   defaults:
     headers:
+      # This is not used currently
       Authorization: "{{ wild_rydes_auth }}"
 scenarios:
   - flow:
@@ -19,4 +20,4 @@ scenarios:
           PickupLocation:
             Latitude: 42.35250862285574
             Longitude: -71.05289904884849
-
+          User: 'MyUser'

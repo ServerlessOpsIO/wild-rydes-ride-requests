@@ -33,12 +33,6 @@ def event() -> dict:
 
 
 @pytest.fixture
-def authorizer(event) -> dict:
-    '''Event authorizer'''
-    return event.get('requestContext').get('authorizer')
-
-
-@pytest.fixture
 def body(event) -> dict:
     '''Event request body'''
     return json.loads(event.get('body'))
@@ -83,27 +77,15 @@ def unicorn() -> dict:
 
 
 @pytest.fixture
-def user(authorizer) -> str:
-    '''Event authorizer user'''
-    return authorizer.get('claims').get('cognito:username')
-
-
-def test__get_authorizer_from_event(event, authorizer):
-    '''test _get_authorizer_from_event'''
-    this_authorizer = h._get_authorizer_from_event(event)
-    assert this_authorizer == authorizer
+def user() -> str:
+    '''User'''
+    return 'TestUser'
 
 
 def test__get_pickup_location(body, pickup_location):
     '''Return pickup location from event'''
     this_pl = h._get_pickup_location(body)
     assert this_pl == pickup_location
-
-
-def test__get_user_from_authorizer(authorizer, user):
-    '''Get username from authentication provider'''
-    this_user = h._get_user_from_authorizer(authorizer)
-    assert this_user == user
 
 
 def test__get_ride(user, pickup_location, ride):

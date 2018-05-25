@@ -74,14 +74,9 @@ def _get_pickup_location(body):
     return body.get('PickupLocation')
 
 
-def _get_authorizer_from_event(event):
-    '''Get authorizer from event.'''
-    return event.get('requestContext').get('authorizer')
-
-
-def _get_user_from_authorizer(authorizer):
-    '''Get username from authentication provider'''
-    return authorizer.get('claims').get('cognito:username')
+def _get_user(body):
+    '''Return user from event'''
+    return body.get('User')
 
 
 def _record_ride(ride_item):
@@ -97,30 +92,19 @@ def handler(event, context):
     '''Function entry'''
     _logger.debug('Request: {}'.format(json.dumps(event)))
 
-    authorizer = _get_authorizer_from_event(event)
-    if authorizer is None:
-        _logger.error('Authorization not configured')
-        error_msg = {'error': 'There seems to be an error on our end.'}
+    body = json.loads(event.get('body'))
+    pickup_location = _get_pickup_location(body)
+    user = _get_user(body)
+    ride_resp = _get_ride(user, pickup_location)
+    _record_ride(ride_resp)
 
-        resp = {
-            'statusCode': 500,
-            'body': json.dumps(error_msg)
+    resp = {
+        'statusCode': 201,
+        'body': json.dumps(ride_resp),
+        'headers': {
+            "Access-Control-Allow-Origin": "*",
         }
-
-    else:
-        user = _get_user_from_authorizer(authorizer)
-        body = json.loads(event.get('body'))
-        pickup_location = _get_pickup_location(body)
-        ride_resp = _get_ride(user, pickup_location)
-        _record_ride(ride_resp)
-
-        resp = {
-            'statusCode': 201,
-            'body': json.dumps(ride_resp),
-            'headers': {
-                "Access-Control-Allow-Origin": "*",
-            }
-        }
+    }
 
     return resp
 

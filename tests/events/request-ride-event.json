@@ -70,6 +70,6 @@
     },
     "apiId": "t8tcwjxf25"
   },
-  "body": "{\"PickupLocation\":{\"Latitude\":42.35250862285574,\"Longitude\":-71.05289904884849}}",
+  "body": "{\"PickupLocation\":{\"Latitude\":42.35250862285574,\"Longitude\":-71.05289904884849}, \"User\":\"MyUser\"}",
   "isBase64Encoded": false
 }
