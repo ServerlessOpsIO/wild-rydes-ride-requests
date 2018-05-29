@@ -38,19 +38,16 @@ FLEET = [
 ]
 
 
-def _get_ride(user, pickup_location):
+def _get_ride(pickup_location):
     '''Get a ride.'''
     ride_id = ''.join(random.choice(string.digits + string.ascii_letters) for _ in range(16))
     unicorn = _get_unicorn()
-    eta = _get_unicorn_eta(unicorn, pickup_location)
 
     # NOTE: upstream they replace Rider with User but that seems silly.
     resp = {
         'RideId': ride_id,
         'Unicorn': unicorn,
         'UnicornName': unicorn.get('Name'),
-        'Eta': '{} Seconds'.format(eta),
-        'Rider': user,
         'RequestTime': str(datetime.datetime.now()),
     }
     return resp
@@ -61,31 +58,9 @@ def _get_unicorn():
     return FLEET[random.randint(0, len(FLEET) - 1)]
 
 
-def _get_unicorn_eta(unicorn, pickup_location):
-    '''Get arrival eta of unicorn.  Returns eta seconds as int.'''
-
-    # This was found to be reasonably accurate and far cheaper than other
-    # solutions tried.
-    return 30
-
-
 def _get_pickup_location(body):
     '''Return pickup location from event'''
     return body.get('PickupLocation')
-
-
-def _get_user(body):
-    '''Return user from event'''
-    return body.get('User')
-
-
-def _record_ride(ride_item):
-    '''Record a ride.'''
-    resp = ddt.put_item(
-        TableName=DYNAMODB_TABLE,
-        Item=ride_item
-    )
-    _logger.debug('_record_ride({}) -> {}'.format(ride_item, resp))
 
 
 def handler(event, context):
@@ -94,9 +69,7 @@ def handler(event, context):
 
     body = json.loads(event.get('body'))
     pickup_location = _get_pickup_location(body)
-    user = _get_user(body)
-    ride_resp = _get_ride(user, pickup_location)
-    _record_ride(ride_resp)
+    ride_resp = _get_ride(pickup_location)
 
     resp = {
         'statusCode': 201,
