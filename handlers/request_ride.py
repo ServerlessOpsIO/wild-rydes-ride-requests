@@ -1,11 +1,11 @@
 '''Request a ride'''
 
-import datetime
+from datetime import datetime
 import logging
 import json
 import os
 import random
-import string
+import uuid
 
 import boto3
 
@@ -38,23 +38,34 @@ FLEET = [
 ]
 
 
+def _generate_ride_id():
+    '''Generate a ride ID.'''
+    return uuid.uuid1()
+
+
 def _get_ride(pickup_location):
     '''Get a ride.'''
-    ride_id = ''.join(random.choice(string.digits + string.ascii_letters) for _ in range(16))
+    ride_id = _generate_ride_id()
     unicorn = _get_unicorn()
 
     # NOTE: upstream they replace Rider with User but that seems silly.
     resp = {
-        'RideId': ride_id,
+        'RideId': str(ride_id),
         'Unicorn': unicorn,
         'UnicornName': unicorn.get('Name'),
-        'RequestTime': str(datetime.datetime.now()),
+        'RequestTime': str(_get_timestamp_from_uuid(ride_id)),
     }
     return resp
 
 
+def _get_timestamp_from_uuid(u):
+    '''Return a timestamp from the given UUID'''
+    return datetime.fromtimestamp((u.time - 0x01b21dd213814000) * 100 / 1e9)
+
+
 def _get_unicorn():
     '''Return a unicorn from the fleet'''
+    # FIXME: would be good to get to a point where we don't fetch the entire table.
     return FLEET[random.randint(0, len(FLEET) - 1)]
 
 
