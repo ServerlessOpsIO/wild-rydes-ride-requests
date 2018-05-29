@@ -10,6 +10,8 @@ custom:
   profile: "${opt:aws-profile, env:AWS_PROFILE, env:AWS_DEFAULT_PROFILE, 'default'}"
   log_level: "${env:LOG_LEVEL, 'INFO'}"
 
+  launchdarkly_key: "${env:LAUNCHDARKLY_KEY}"
+
   pythonRequirements:
     # if using pyenv, make sure virtualenv was initialized to create python3.6
     # `pyenv virtualenv -p python3.6 <VERSION> <VIRTUALENV>`
@@ -43,6 +45,8 @@ functions:
     environment:
       DYNAMODB_TABLE:
         Ref: RidesTable
+      LAUNCHDARKLY_KEY:
+        Ref: LaunchDarklyKey
     events:
       - http:
           path: /ride
@@ -51,6 +55,12 @@ functions:
 
 
 resources:
+  Parameters:
+    LaunchDarklyKey:
+      Type: String
+      Description: "LaunchDarkly SDK key"
+      Default: "${self:custom.launchdarkly_key}"
+
   Resources:
     RidesTable:
       Type: AWS::DynamoDB::Table
