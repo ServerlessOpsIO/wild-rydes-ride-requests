@@ -1,6 +1,5 @@
-# <DESCRIBE SERVICE>
+# Request a ride.
 service: wild-rydes-ride-requests
-
 
 plugins:
   - serverless-python-requirements
@@ -9,6 +8,9 @@ custom:
   stage: "${opt:stage, env:SLS_STAGE, 'dev'}"
   profile: "${opt:aws-profile, env:AWS_PROFILE, env:AWS_DEFAULT_PROFILE, 'default'}"
   log_level: "${env:LOG_LEVEL, 'INFO'}"
+
+  unicorn_hash_key: 'Name'
+  unicorn_table_data: 'data/unicorns.json'
 
   pythonRequirements:
     # if using pyenv, make sure virtualenv was initialized to create python3.6
@@ -30,7 +32,7 @@ provider:
         - dynamodb:Scan
       Resource:
         Fn::GetAtt:
-          - RidesTable
+          - UnicornsTable
           - Arn
 
 
@@ -42,29 +44,55 @@ functions:
     timeout: 30
     environment:
       DYNAMODB_TABLE:
-        Ref: RidesTable
+        Ref: UnicornsTable
+      UNICORN_HASH_KEY: "${self:custom.unicorn_hash_key}"
     events:
       - http:
           path: /ride
           method: post
           cors: true
 
+  LoadTable:
+    handler: handlers/load_table.handler
+    description: "Load an initial table."
+    memorySize: 128
+    timeout: 60
+    environment:
+      DYNAMODB_TABLE:
+        Ref: UnicornsTable
+      INITIAL_TABLE_DATA: "${self:custom.unicorn_table_data}"
+
 
 resources:
   Resources:
-    RidesTable:
+    UnicornsTable:
       Type: AWS::DynamoDB::Table
       Properties:
         AttributeDefinitions:
-          - AttributeName: RideId
+          - AttributeName: "${self:custom.unicorn_hash_key}"
             AttributeType: S
         KeySchema:
-          - AttributeName: RideId
+          - AttributeName: "${self:custom.unicorn_hash_key}"
             KeyType: HASH
         ProvisionedThroughput:
           ReadCapacityUnits: 5
           WriteCapacityUnits: 5
 
+    LoadTable:
+      Type: "Custom::ConfigFile"
+      Properties:
+        ServiceToken:
+          Fn::GetAtt:
+            - LoadTableLambdaFunction
+            - Arn
+        InvokeUrl:
+          Fn::Join:
+            - ""
+            - - "https://"
+              - Ref: ApiGatewayRestApi
+              - ".execute-api."
+              - Ref: AWS::Region
+              - ".amazonaws.com/${self:custom.stage}"
 
   Outputs:
     WildRydesApiInvokeUrl:
