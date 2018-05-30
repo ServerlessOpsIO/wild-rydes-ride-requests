@@ -94,17 +94,3 @@ resources:
               - Ref: AWS::Region
               - ".amazonaws.com/${self:custom.stage}"
 
-  Outputs:
-    WildRydesApiInvokeUrl:
-      Description: URL for the deployed wild rydes API
-      Value:
-        Fn::Join:
-          - ""
-          - - "https://"
-            - Ref: ApiGatewayRestApi
-            - ".execute-api."
-            - Ref: AWS::Region
-            - ".amazonaws.com/${self:custom.stage}"
-      Export:
-        Name: "${self:service}-${self:provider.stage}-WildRydesApiUrl"
-
