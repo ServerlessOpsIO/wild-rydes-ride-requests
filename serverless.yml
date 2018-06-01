@@ -10,6 +10,8 @@ custom:
   profile: "${opt:aws-profile, env:AWS_PROFILE, env:AWS_DEFAULT_PROFILE, 'default'}"
   log_level: "${env:LOG_LEVEL, 'INFO'}"
 
+  request_unicorn_url: "${cf:wild-rydes-ride-fleet-${self:custom.stage}.RequestUnicornUrl}"
+
 
 provider:
   name: aws
@@ -28,6 +30,8 @@ functions:
     description: "Request a ride."
     memorySize: 128
     timeout: 30
+    environment:
+      REQUEST_UNICORN_URL: "${self:custom.request_unicorn_url}"
     events:
       - http:
           path: /ride

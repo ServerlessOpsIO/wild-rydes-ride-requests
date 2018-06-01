@@ -19,6 +19,8 @@ EVENT_FILE = os.path.join(
 
 STACK_NAME = 'wild-rydes-ride-requests-dev'
 ENDPOINT_OUTPUT_NAME = 'RequestRideUrl'
+UNICORN_STACK_NAME = 'wild-rydes-ride-fleet-dev'
+UNICORN_REQUEST_OUTPUT_NAME = 'RequestUnicornUrl'
 
 
 def _get_output_value_from_cfn(stack_name, output_key):
@@ -55,6 +57,24 @@ def website_url() -> str:
     )
     assert site_url is not None
     return site_url
+
+
+@pytest.fixture
+def unicorn_request_url() -> str:
+    '''website URL'''
+    site_url = _get_output_value_from_cfn(
+        UNICORN_STACK_NAME,
+        UNICORN_REQUEST_OUTPUT_NAME
+    )
+    assert site_url is not None
+    return site_url
+
+
+def test__get_unicorn(unicorn_request_url):
+    '''Get a unicorn from fleet service'''
+    unicorn = requests.get(unicorn_request_url).json()
+    assert 'Name' in unicorn.keys()
+    assert 'Color' in unicorn.keys()
 
 
 def test_request_ride_endpoint(website_url, request_data):

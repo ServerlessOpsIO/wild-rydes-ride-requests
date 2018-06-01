@@ -4,28 +4,15 @@ from datetime import datetime
 import logging
 import json
 import os
-import random
 import uuid
+
+from botocore.vendored import requests
 
 log_level = os.environ.get('LOG_LEVEL', 'INFO')
 logging.root.setLevel(logging.getLevelName(log_level))  # type:ignore
 _logger = logging.getLogger(__name__)
 
-FLEET = [
-    {
-        'Name': 'Bucephalus',
-        'Color': 'Golden',
-    },
-    {
-        'Name': 'Shadowfax',
-        'Color': 'White',
-    },
-    {
-        'Name': 'Rocinante',
-        'Color': 'Yellow',
-    },
-
-]
+REQUEST_UNICORN_URL = os.environ.get('REQUEST_UNICORN_URL')
 
 
 def _generate_ride_id():
@@ -52,10 +39,11 @@ def _get_timestamp_from_uuid(u):
     return datetime.fromtimestamp((u.time - 0x01b21dd213814000) * 100 / 1e9)
 
 
-def _get_unicorn():
+def _get_unicorn(url=REQUEST_UNICORN_URL):
     '''Return a unicorn from the fleet'''
     # FIXME: would be good to get to a point where we don't fetch the entire table.
-    return FLEET[random.randint(0, len(FLEET) - 1)]
+    unicorn = requests.get(REQUEST_UNICORN_URL)
+    return unicorn.json()
 
 
 def _get_pickup_location(body):
