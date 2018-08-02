@@ -41,7 +41,6 @@ def _get_timestamp_from_uuid(u):
 
 def _get_unicorn(url=REQUEST_UNICORN_URL):
     '''Return a unicorn from the fleet'''
-    # FIXME: would be good to get to a point where we don't fetch the entire table.
     unicorn = requests.get(REQUEST_UNICORN_URL)
     return unicorn.json()
 
