@@ -66,5 +66,6 @@ def handler(event, context):
         }
     }
 
+    _logger.debug(resp)
     return resp
 
