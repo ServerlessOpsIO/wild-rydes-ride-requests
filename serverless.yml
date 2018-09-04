@@ -11,7 +11,7 @@ custom:
   log_level: "${env:LOG_LEVEL, 'INFO'}"
 
   request_unicorn_url: "${cf:wild-rydes-ride-fleet-${self:custom.stage}.RequestUnicornUrl}"
-
+  ride_record_url: "${cf:wild-rydes-ride-record-${self:custom.stage}.RideRecordUrl}"
 
 provider:
   name: aws
@@ -32,6 +32,7 @@ functions:
     timeout: 30
     environment:
       REQUEST_UNICORN_URL: "${self:custom.request_unicorn_url}"
+      RIDE_RECORD_URL: "${self:custom.ride_record_url}"
     events:
       - http:
           path: /ride
